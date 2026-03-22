@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <title>JustOneMore</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="desktop-block" id="desktopBlock">
+    <div class="desktop-block__card">
+      <p class="eyebrow">Solo mobile</p>
+      <h1>Apri l'app dal telefono</h1>
+      <p>Questa web app e progettata esclusivamente per l'uso mobile durante l'allenamento.</p>
+    </div>
+  </div>
+
+  <div class="app-shell" id="appShell">
+    <header class="hero">
+      <div class="hero__topbar">
+        <div></div>
+        <button class="ghost-button header-remove-button hidden" id="removeSheetButton" type="button">Rimuovi scheda</button>
+      </div>
+      <p class="eyebrow">JustOneMore</p>
+      <h1>Le tue schede, sempre sul telefono</h1>
+      <p class="hero__text">Importa una scheda JSON, consulta gli allenamenti e avvia la modalita focus per seguire un esercizio alla volta.</p>
+    </header>
+
+    <main class="app-main">
+      <section class="panel import-panel">
+        <div>
+          <p class="section-label">Import</p>
+          <h2>Carica una scheda</h2>
+          <p class="section-text">Il file resta sul dispositivo: nessun login, nessun backend, nessun database remoto.</p>
+        </div>
+
+        <label class="file-input" id="fileInputLabel">
+          <span>Seleziona file JSON</span>
+          <input type="file" id="jsonFileInput" accept=".json,application/json">
+        </label>
+
+        <p class="status-message" id="statusMessage">Nessuna scheda caricata.</p>
+      </section>
+
+      <section class="panel sheet-panel" id="sheetPanel">
+        <div class="sheet-panel__header">
+          <div>
+            <p class="section-label">Scheda</p>
+            <h2 id="programName">In attesa di import</h2>
+          </div>
+        </div>
+        <div id="sheetContent" class="sheet-content empty-state">
+          Importa un file JSON per visualizzare la scheda.
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="workout-modal hidden" id="workoutModal">
+    <div class="workout-modal__backdrop"></div>
+    <section class="workout-modal__panel">
+      <div class="workout-panel__header">
+        <div>
+          <p class="section-label">Allenamento</p>
+          <h2 id="workoutTitle">Modalita allenamento</h2>
+        </div>
+        <div class="modal-actions">
+          <button class="ghost-button" id="minimizeWorkoutButton" type="button">Riduci</button>
+          <button class="ghost-button" id="exitWorkoutButton" type="button">Esci</button>
+        </div>
+      </div>
+
+      <div id="workoutContent"></div>
+    </section>
+  </div>
+
+  <button class="floating-island hidden" id="floatingIsland" type="button">
+    <div>
+      <span class="floating-island__label">Allenamento attivo</span>
+      <span id="floatingIslandSeries">1/4</span>
+    </div>
+    <strong id="floatingIslandExercise">Esercizio</strong>
+  </button>
+
+  <script src="app.js"></script>
+</body>
+</html>
