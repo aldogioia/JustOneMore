@@ -135,6 +135,7 @@ body.has-sheet .import-panel {
   padding: 0;
   background: none;
   backdrop-filter: none;
+  box-shadow: none;
 }
 
 .import-panel,
@@ -215,7 +216,8 @@ body.has-sheet .import-panel {
 .accordion-panel {
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.32s ease-in-out;
+  will-change: max-height;
 }
 
 .accordion-panel__inner {
@@ -445,6 +447,7 @@ body.has-sheet .import-panel {
   border: 1px solid rgba(79, 195, 179, 0.2);
   border-radius: 999px;
   background: var(--primary-transparent);
+  backdrop-filter: blur(16px);
   color: var(--text);
   padding: 16px 20px;
   display: grid;

@@ -33,6 +33,7 @@ removeSheetButton.addEventListener("click", removeCurrentSheet);
 minimizeWorkoutButton.addEventListener("click", minimizeWorkoutMode);
 floatingIsland.addEventListener("click", reopenWorkoutMode);
 workoutActionButton.addEventListener("click", handleWorkoutAction);
+window.addEventListener("resize", syncAccordionHeights);
 
 function handleFileImport(event) {
   const [file] = event.target.files;
@@ -258,7 +259,7 @@ function renderSheet() {
               </button>
             </div>
           </div>
-          <div class="accordion-panel" style="max-height: ${isExpanded ? "480px" : "0px"};">
+          <div class="accordion-panel" data-workout-index="${workoutIndex}">
             <div class="accordion-panel__inner">
               <div class="compact-list">
                 ${simpleSetsMarkup || '<div class="empty-state">Nessun set disponibile.</div>'}
@@ -269,6 +270,8 @@ function renderSheet() {
       `;
     })
     .join("");
+
+  syncAccordionHeights();
 }
 
 function startWorkout(workoutIndex) {
@@ -585,6 +588,20 @@ function removeCurrentSheet() {
 function toggleWorkoutDetails(workoutIndex) {
   expandedWorkoutIndex = expandedWorkoutIndex === workoutIndex ? null : workoutIndex;
   renderSheet();
+}
+
+function syncAccordionHeights() {
+  const accordionPanels = document.querySelectorAll(".accordion-panel");
+
+  accordionPanels.forEach((panel) => {
+    const panelIndex = Number(panel.dataset.workoutIndex);
+
+    if (panelIndex === expandedWorkoutIndex) {
+      panel.style.maxHeight = `${panel.scrollHeight}px`;
+    } else {
+      panel.style.maxHeight = "0px";
+    }
+  });
 }
 
 function animateWorkoutTransition(targetIndex, onComplete) {
