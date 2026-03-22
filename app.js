@@ -19,6 +19,8 @@ const sheetContent = document.getElementById("sheetContent");
 const workoutModal = document.getElementById("workoutModal");
 const workoutTitle = document.getElementById("workoutTitle");
 const workoutContent = document.getElementById("workoutContent");
+const workoutActions = document.getElementById("workoutActions");
+const workoutActionButton = document.getElementById("workoutActionButton");
 const exitWorkoutButton = document.getElementById("exitWorkoutButton");
 const minimizeWorkoutButton = document.getElementById("minimizeWorkoutButton");
 const floatingIsland = document.getElementById("floatingIsland");
@@ -30,6 +32,7 @@ exitWorkoutButton.addEventListener("click", closeWorkoutMode);
 removeSheetButton.addEventListener("click", removeCurrentSheet);
 minimizeWorkoutButton.addEventListener("click", minimizeWorkoutMode);
 floatingIsland.addEventListener("click", reopenWorkoutMode);
+workoutActionButton.addEventListener("click", handleWorkoutAction);
 
 function handleFileImport(event) {
   const [file] = event.target.files;
@@ -311,6 +314,7 @@ function renderWorkoutMode() {
   if (!allenamentoAttivo) {
     workoutTitle.textContent = "Modalita allenamento";
     workoutContent.innerHTML = "";
+    updateWorkoutActionButton();
     updateFloatingIsland();
     return;
   }
@@ -328,6 +332,7 @@ function renderWorkoutMode() {
         </div>
       </div>
     `;
+    updateWorkoutActionButton();
     updateFloatingIsland();
     persistAppState();
     return;
@@ -337,6 +342,7 @@ function renderWorkoutMode() {
   const exercise = currentSet.esercizi[allenamentoAttivo.esercizioIndex];
   const historyKey = createHistoryKey(allenamentoAttivo.nome, currentSet.nome, exercise.nome);
   const history = storicoEsercizi[historyKey];
+  const showDots = currentSet.esercizi.length > 1;
   const dotsMarkup = currentSet.esercizi
     .map((_, index) => `<span class="slider-dot ${index === allenamentoAttivo.esercizioIndex ? "is-active" : ""}"></span>`)
     .join("");
@@ -399,20 +405,16 @@ function renderWorkoutMode() {
           <strong>${escapeHtml(currentSet.nome)}</strong>
         </div>
       </div>
-      <div class="slider-dots">${dotsMarkup}</div>
+      ${showDots ? `<div class="slider-dots">${dotsMarkup}</div>` : ""}
       <div class="workout-slider">
         <div class="workout-slider__track" id="workoutSliderTrack" style="transform: translateX(-${allenamentoAttivo.esercizioIndex * 100}%);">
           ${slidesMarkup}
         </div>
       </div>
-      <div class="workout-actions">
-        <button class="workout-button" type="button" onclick="completeSet()">
-          Avanti
-        </button>
-      </div>
     </div>
   `;
 
+  updateWorkoutActionButton();
   updateFloatingIsland();
 }
 
@@ -515,6 +517,45 @@ function reopenWorkoutMode() {
 function openWorkoutMode() {
   workoutModal.classList.remove("hidden");
   updateFloatingIsland();
+}
+
+function handleWorkoutAction() {
+  if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
+    return;
+  }
+
+  completeSet();
+}
+
+function updateWorkoutActionButton() {
+  if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
+    workoutActions.classList.add("hidden");
+    return;
+  }
+
+  workoutActions.classList.remove("hidden");
+  workoutActionButton.textContent = getWorkoutActionLabel();
+}
+
+function getWorkoutActionLabel() {
+  if (!allenamentoAttivo) {
+    return "Avanti";
+  }
+
+  const currentSet = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex];
+  const isLastExerciseInSet = allenamentoAttivo.esercizioIndex >= currentSet.esercizi.length - 1;
+  const isLastSeriesInSet = allenamentoAttivo.serieCorrente >= currentSet.serieTotali;
+  const isLastWorkoutSet = allenamentoAttivo.setIndex >= allenamentoAttivo.superSerie.length - 1;
+
+  if (isLastExerciseInSet && isLastSeriesInSet && isLastWorkoutSet) {
+    return "Concludi allenamento";
+  }
+
+  if (isLastExerciseInSet && isLastSeriesInSet) {
+    return "Prossimo esercizio";
+  }
+
+  return "Avanti";
 }
 
 function updateFloatingIsland() {

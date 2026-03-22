@@ -11,6 +11,7 @@
   --accent: #8ab4ff;
   --border: rgba(255, 255, 255, 0.08);
   --shadow: 0 22px 60px rgba(0, 0, 0, 0.4);
+  --radius-xxl: 32px;
   --radius-xl: 28px;
   --radius-lg: 20px;
   --radius-md: 14px;
@@ -30,7 +31,8 @@ body {
   background:
     radial-gradient(circle at top left, rgba(79, 195, 179, 0.16), transparent 30%),
     radial-gradient(circle at top right, rgba(138, 180, 255, 0.18), transparent 28%),
-    linear-gradient(180deg, #06090f 0%, #0b111b 100%);
+    linear-gradient(180deg, #06090f 0%, #0b111b 100%),
+    var(--bg);
 }
 
 body {
@@ -110,6 +112,8 @@ input {
 .app-main {
   display: grid;
   gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 body.has-sheet .import-panel {
@@ -123,6 +127,14 @@ body.has-sheet .import-panel {
   border-radius: var(--radius-xl);
   padding: 18px;
   box-shadow: var(--shadow);
+}
+
+.panel.sheet-panel {
+  border-radius: none;
+  border: none;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
 }
 
 .import-panel,
@@ -164,7 +176,7 @@ body.has-sheet .import-panel {
 .workout-card {
   background: var(--surface-strong);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xxl);
   overflow: hidden;
 }
 
@@ -340,6 +352,7 @@ body.has-sheet .import-panel {
 }
 
 .summary-card {
+  text-align: center;
   background: rgba(9, 15, 25, 0.52);
   border-radius: var(--radius-md);
   padding: 12px;
@@ -433,7 +446,7 @@ body.has-sheet .import-panel {
   border-radius: 999px;
   background: var(--primary-transparent);
   color: var(--text);
-  padding: 16px 16px;
+  padding: 16px 20px;
   display: grid;
   gap: 2px;
   text-align: left;
