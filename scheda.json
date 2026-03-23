@@ -1,0 +1,271 @@
+{
+  "nome": "Scheda di Allenamento Aldo Gioia",
+  "allenamenti": [
+    {
+      "nome": "GIORNO 1",
+      "sets": [
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Iperextension", "ripetizioni": "10-12", "note": "1\" di isometria ogni ripetizione" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Pull down vulken", "ripetizioni": "8-12", "note": "3\" di isometria ogni ripetizione" },
+            { "nome": "Lat machine triangolo", "ripetizioni": "6-8" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Trazioni", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Rowing singolo", "ripetizioni": "8-12", "note": "30\" di pausa tra le serie" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "T bar presa inversa", "ripetizioni": [15, 10, 8] }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Arm curl", "ripetizioni": [15, "10-12", "10-12"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Curl bilanciere angolato", "ripetizioni": "6-8" },
+            { "nome": "Curl cavi alti", "ripetizioni": "15-20" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Curl corda cavo basso", "ripetizioni": [15, "8-12", "8-12"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Addominali", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 1,
+          "esercizi": [
+            { "nome": "Cardio", "ripetizioni": "15'" }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "GIORNO 2",
+      "sets": [
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Adductor", "ripetizioni": [15, "8-12", "8-12"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Leg extension", "ripetizioni": ["10-12", "6-8", "6-8"]}
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Hack squat", "ripetizioni": "8-12" },
+            { "nome": "Sissy squat all'hack squat", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Affondi bulgari", "ripetizioni": "8-10" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Hip trust", "ripetizioni": "10-12" }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Calf alla Pressa", "ripetizioni": "10-12" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "French press al cavo", "ripetizioni": [12, 10, 8], "note": "Ultima serie 1 rest pause" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Spinte presa stretta al multipower", "ripetizioni": "8-10", "note": "Ultima serie 1 stripping" }
+          ]
+        },
+        {
+          "serie": 2,
+          "esercizi": [
+            { "nome": "Push down", "ripetizioni": "8-10", "note": "Un rest pause ogni serie" }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Addominali", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 1,
+          "esercizi": [
+            { "nome": "Cardio", "ripetizioni": "10'" }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "GIORNO 3",
+      "sets": [
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Alzate laterali al cavo", "ripetizioni": "8-12" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Alzate laterali", "ripetizioni": "8-12" },
+            { "nome": "Parziali", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Lento avanti al multipower", "ripetizioni": "8-10" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Alzate frontali alternate", "ripetizioni": [12, 10, 8] }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Lateral raises machine", "ripetizioni": [15, "8-12", "8-12"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Iperextension", "ripetizioni": [15, 12, 10] }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Leg curl seduto", "ripetizioni": "8-12", "note": "Ogni ripetizione 3\" di isometria" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Leg curl sdraiato", "ripetizioni": [15, 10, 8], "note": "Ultima serie 1 stripping" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Stacchi", "ripetizioni": "8-10" }
+          ]
+        },
+        {
+          "serie": 1,
+          "esercizi": [
+            { "nome": "Cardio", "ripetizioni": "15'" }
+          ]
+        }
+      ]
+    },
+    {
+      "nome": "GIORNO 4",
+      "sets": [
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Croci ai cavi panca a 30°", "ripetizioni": [15, "8-12", "8-12"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Panca a 30° al multipower", "ripetizioni": ["10-12", "6-8", "6-8", "6-8"]}
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Distensioni manubri panca piana", "ripetizioni": ["6-8", "6-8", "10-12"]}
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Chest press incline", "ripetizioni": "8-10" },
+            { "nome": "Pectoral larga", "ripetizioni": "12-15" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "Low row presa divergente", "ripetizioni": ["6-8", "6-8", "10-12"] }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Rear delt machine", "ripetizioni": "8-10" },
+            { "nome": "Chest pulls", "ripetizioni": "8-10" }
+          ]
+        },
+        {
+          "serie": 3,
+          "esercizi": [
+            { "nome": "T bar presa larga", "ripetizioni": [15, "8-10", "8-10"], "note": "Prima serie in isomix" }
+          ]
+        },
+        {
+          "serie": 4,
+          "esercizi": [
+            { "nome": "Addominali", "ripetizioni": "max" }
+          ]
+        },
+        {
+          "serie": 1,
+          "esercizi": [
+            { "nome": "Cardio", "ripetizioni": "10'" }
+          ]
+        }
+      ]
+    }
+  ]
+}

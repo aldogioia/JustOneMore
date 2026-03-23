@@ -114,6 +114,11 @@ input {
   gap: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border);
+ transition: padding-bottom 0.25s ease;
+}
+
+body.body--floating-active .app-main {
+  padding-bottom: 100px;
 }
 
 body.has-sheet .import-panel {
@@ -297,6 +302,18 @@ body.has-sheet .import-panel {
 .workout-content {
   display: grid;
   gap: 16px;
+  transition: transform 0.32s ease-in-out, opacity 0.32s ease-in-out;
+  will-change: transform, opacity;
+}
+
+.workout-content.is-set-transition-out {
+  transform: translateY(-28px);
+  opacity: 0;
+}
+
+.workout-content.is-set-transition-in {
+  transform: translateY(28px);
+  opacity: 0;
 }
 
 .workout-slider {

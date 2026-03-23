@@ -20,6 +20,7 @@ const workoutModal = document.getElementById("workoutModal");
 const workoutTitle = document.getElementById("workoutTitle");
 const workoutContent = document.getElementById("workoutContent");
 const workoutActions = document.getElementById("workoutActions");
+const workoutBackButton = document.getElementById("workoutBackButton");
 const workoutActionButton = document.getElementById("workoutActionButton");
 const exitWorkoutButton = document.getElementById("exitWorkoutButton");
 const minimizeWorkoutButton = document.getElementById("minimizeWorkoutButton");
@@ -32,6 +33,7 @@ exitWorkoutButton.addEventListener("click", closeWorkoutMode);
 removeSheetButton.addEventListener("click", removeCurrentSheet);
 minimizeWorkoutButton.addEventListener("click", minimizeWorkoutMode);
 floatingIsland.addEventListener("click", reopenWorkoutMode);
+workoutBackButton.addEventListener("click", handleWorkoutBack);
 workoutActionButton.addEventListener("click", handleWorkoutAction);
 window.addEventListener("resize", syncAccordionHeights);
 
@@ -46,7 +48,7 @@ function handleFileImport(event) {
 
   reader.onload = (loadEvent) => {
     try {
-      const parsedData = JSON.parse(loadEvent.target.result);
+      const parsedData = normalizeProgramData(JSON.parse(loadEvent.target.result));
       validateProgram(parsedData);
 
       schedaCorrente = parsedData;
@@ -79,6 +81,237 @@ function validateProgram(data) {
 
   if (!data.nome || !Array.isArray(data.allenamenti)) {
     throw new Error("Formato non valido: servono nome e array allenamenti.");
+  }
+}
+
+function normalizeProgramData(programData) {
+  return {
+    ...programData,
+    allenamenti: Array.isArray(programData.allenamenti)
+      ? programData.allenamenti.map(normalizeWorkoutData)
+      : []
+  };
+}
+
+function normalizeWorkoutData(workoutData) {
+  return {
+    ...workoutData,
+    sets: Array.isArray(workoutData.sets)
+      ? workoutData.sets.map(normalizeSetData)
+      : []
+  };
+}
+
+function normalizeSetData(setData) {
+  const totalSeries = Math.max(Number(setData.serie) || 0, 0);
+
+  return {
+    ...setData,
+    serie: totalSeries,
+    esercizi: Array.isArray(setData.esercizi)
+      ? setData.esercizi.map((exerciseData) => normalizeExerciseData(exerciseData, totalSeries))
+      : []
+  };
+}
+
+function normalizeExerciseData(exerciseData, totalSeries) {
+  return {
+    ...exerciseData,
+    ripetizioni: normalizeRepsArray(exerciseData.ripetizioni, totalSeries)
+  };
+}
+
+function normalizeRepsArray(rawReps, totalSeries) {
+  if (totalSeries <= 0) {
+    return [];
+  }
+
+  if (Array.isArray(rawReps)) {
+    const values = rawReps
+      .filter((value) => value !== null && value !== undefined && value !== "");
+
+    if (!values.length) {
+      return Array(totalSeries).fill("-");
+    }
+
+    while (values.length < totalSeries) {
+      values.push(values[values.length - 1]);
+    }
+
+    return values
+      .slice(0, totalSeries)
+      .map((value) => value === "" ? "-" : value);
+  }
+
+  const fallbackValue = rawReps !== null && rawReps !== undefined && rawReps !== "" ? rawReps : "-";
+  return Array(totalSeries).fill(fallbackValue);
+}
+
+function normalizePersistedWorkoutState(workoutState) {
+  if (!workoutState || !workoutState.allenamentoAttivo) {
+    return null;
+  }
+
+  const normalizedWorkout = {
+    ...workoutState.allenamentoAttivo,
+    superSerie: Array.isArray(workoutState.allenamentoAttivo.superSerie)
+      ? workoutState.allenamentoAttivo.superSerie.map((setItem) => ({
+        ...setItem,
+        esercizi: Array.isArray(setItem.esercizi)
+          ? setItem.esercizi.map((exerciseData) => normalizeExerciseData(exerciseData, Number(setItem.serieTotali) || 0))
+          : []
+      }))
+      : [],
+    workoutLog: workoutState.allenamentoAttivo.workoutLog || {}
+  };
+
+  return {
+    allenamentoAttivo: normalizedWorkout,
+    workoutActive: workoutState.workoutActive === true,
+    workoutMinimized: workoutState.workoutMinimized === true
+  };
+}
+
+function getTargetReps(exercise, seriesIndex) {
+  if (!exercise || !Array.isArray(exercise.ripetizioni) || !exercise.ripetizioni.length) {
+    return "-";
+  }
+
+  return exercise.ripetizioni[seriesIndex] ?? exercise.ripetizioni[exercise.ripetizioni.length - 1] ?? "-";
+}
+
+function formatTargetReps(value) {
+  return `${value} reps`;
+}
+
+function createWorkoutEntryKey(setName, exerciseName) {
+  return `${setName}::${exerciseName}`;
+}
+
+function createInitialWorkoutLog(superSerie) {
+  const workoutLog = {};
+
+  superSerie.forEach((setItem) => {
+    setItem.esercizi.forEach((exercise) => {
+      const entryKey = createWorkoutEntryKey(setItem.nome, exercise.nome);
+      workoutLog[entryKey] = Array.from({ length: setItem.serieTotali }, () => ({ reps: "", peso: "" }));
+    });
+  });
+
+  return workoutLog;
+}
+
+function getCurrentWorkoutEntry() {
+  if (!allenamentoAttivo) {
+    return { reps: "", peso: "" };
+  }
+
+  const currentSet = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex];
+  const exercise = currentSet.esercizi[allenamentoAttivo.esercizioIndex];
+  const entryKey = createWorkoutEntryKey(currentSet.nome, exercise.nome);
+  const seriesIndex = allenamentoAttivo.serieCorrente - 1;
+
+  if (!allenamentoAttivo.workoutLog) {
+    allenamentoAttivo.workoutLog = {};
+  }
+
+  if (!Array.isArray(allenamentoAttivo.workoutLog[entryKey])) {
+    allenamentoAttivo.workoutLog[entryKey] = Array.from({ length: currentSet.serieTotali }, () => ({ reps: "", peso: "" }));
+  }
+
+  if (!allenamentoAttivo.workoutLog[entryKey][seriesIndex]) {
+    allenamentoAttivo.workoutLog[entryKey][seriesIndex] = { reps: "", peso: "" };
+  }
+
+  return allenamentoAttivo.workoutLog[entryKey][seriesIndex];
+}
+
+function normalizeWeightValue(value) {
+  const normalizedValue = String(value ?? "").trim().replace(",", ".");
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  const numericValue = Number(normalizedValue);
+  return Number.isFinite(numericValue) ? numericValue : normalizedValue;
+}
+
+function syncCurrentWorkoutInputs() {
+  if (!allenamentoAttivo || allenamentoAttivo.completato) {
+    return;
+  }
+
+  const repsInput = document.getElementById(`repsInput-${allenamentoAttivo.esercizioIndex}`);
+  const weightInput = document.getElementById(`weightInput-${allenamentoAttivo.esercizioIndex}`);
+
+  if (!repsInput || !weightInput) {
+    return;
+  }
+
+  const currentEntry = getCurrentWorkoutEntry();
+  currentEntry.reps = repsInput.value.trim();
+  currentEntry.peso = normalizeWeightValue(weightInput.value);
+}
+
+function persistCurrentWorkoutInputs() {
+  syncCurrentWorkoutInputs();
+  persistAppState();
+}
+
+function isWorkoutAtStart() {
+  return Boolean(allenamentoAttivo)
+    && allenamentoAttivo.setIndex === 0
+    && allenamentoAttivo.serieCorrente === 1
+    && allenamentoAttivo.esercizioIndex === 0;
+}
+
+function goToPreviousWorkoutStep() {
+  if (!allenamentoAttivo || isWorkoutAtStart()) {
+    return false;
+  }
+
+  if (allenamentoAttivo.esercizioIndex > 0) {
+    allenamentoAttivo.esercizioIndex -= 1;
+    return true;
+  }
+
+  if (allenamentoAttivo.serieCorrente > 1) {
+    allenamentoAttivo.serieCorrente -= 1;
+    allenamentoAttivo.esercizioIndex = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex].esercizi.length - 1;
+    return true;
+  }
+
+  if (allenamentoAttivo.setIndex > 0) {
+    allenamentoAttivo.setIndex -= 1;
+    const previousSet = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex];
+    allenamentoAttivo.serieCorrente = previousSet.serieTotali;
+    allenamentoAttivo.esercizioIndex = previousSet.esercizi.length - 1;
+    return true;
+  }
+
+  return false;
+}
+
+function attachWorkoutInputListeners() {
+  if (!allenamentoAttivo || allenamentoAttivo.completato) {
+    return;
+  }
+
+  const repsInput = document.getElementById(`repsInput-${allenamentoAttivo.esercizioIndex}`);
+  const weightInput = document.getElementById(`weightInput-${allenamentoAttivo.esercizioIndex}`);
+
+  if (repsInput) {
+    repsInput.addEventListener("input", persistCurrentWorkoutInputs);
+  }
+
+  if (weightInput) {
+    weightInput.addEventListener("input", persistCurrentWorkoutInputs);
+    weightInput.addEventListener("blur", () => {
+      const normalizedValue = normalizeWeightValue(weightInput.value);
+      weightInput.value = normalizedValue === "" ? "" : String(normalizedValue);
+      persistCurrentWorkoutInputs();
+    });
   }
 }
 
@@ -287,7 +520,7 @@ function startWorkout(workoutIndex) {
       esercizi: (setItem.esercizi || []).map((esercizio) => ({
         nome: esercizio.nome || "Esercizio senza nome",
         note: esercizio.note || "",
-        ripetizioni: esercizio.ripetizioni ?? "-"
+        ripetizioni: normalizeRepsArray(esercizio.ripetizioni, Number(setItem.serie) || 0)
       }))
     }))
     .filter((setItem) => setItem.serieTotali > 0 && setItem.esercizi.length > 0);
@@ -303,6 +536,7 @@ function startWorkout(workoutIndex) {
     serieCorrente: 1,
     esercizioIndex: 0,
     superSerie,
+    workoutLog: createInitialWorkoutLog(superSerie),
     completato: false
   };
 
@@ -343,15 +577,19 @@ function renderWorkoutMode() {
 
   const currentSet = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex];
   const exercise = currentSet.esercizi[allenamentoAttivo.esercizioIndex];
-  const historyKey = createHistoryKey(allenamentoAttivo.nome, currentSet.nome, exercise.nome);
+  const currentSeriesIndex = allenamentoAttivo.serieCorrente - 1;
+  const historyKey = createHistoryKey(allenamentoAttivo.nome, currentSet.nome, exercise.nome, currentSeriesIndex);
   const history = storicoEsercizi[historyKey];
+  const targetReps = getTargetReps(exercise, currentSeriesIndex);
+  const currentEntry = getCurrentWorkoutEntry();
   const showDots = currentSet.esercizi.length > 1;
   const dotsMarkup = currentSet.esercizi
     .map((_, index) => `<span class="slider-dot ${index === allenamentoAttivo.esercizioIndex ? "is-active" : ""}"></span>`)
     .join("");
   const slidesMarkup = currentSet.esercizi
     .map((item, index) => {
-      const itemHistory = storicoEsercizi[createHistoryKey(allenamentoAttivo.nome, currentSet.nome, item.nome)];
+      const itemTargetReps = getTargetReps(item, currentSeriesIndex);
+      const itemHistory = storicoEsercizi[createHistoryKey(allenamentoAttivo.nome, currentSet.nome, item.nome, currentSeriesIndex)];
       const itemHistoryMarkup = itemHistory
         ? `Ultima volta: ${escapeHtml(String(itemHistory.peso))} kg x ${escapeHtml(String(itemHistory.ripetizioni))} reps`
         : "Ultima volta: nessun dato disponibile";
@@ -372,7 +610,7 @@ function renderWorkoutMode() {
               </div>
               <div class="summary-card">
                 <span>Ripetizioni target</span>
-                <strong>${escapeHtml(String(item.ripetizioni))}</strong>
+                <strong>${escapeHtml(formatTargetReps(itemTargetReps))}</strong>
               </div>
             </div>
 
@@ -380,12 +618,12 @@ function renderWorkoutMode() {
 
             <div class="field-group">
               <label for="repsInput-${index}">Ripetizioni fatte</label>
-              <input id="repsInput-${index}" type="number" min="0" inputmode="numeric" placeholder="Es. 10" ${index !== allenamentoAttivo.esercizioIndex ? "disabled" : ""}>
+              <input id="repsInput-${index}" type="number" min="0" inputmode="numeric" placeholder="Es. 10" value="${index === allenamentoAttivo.esercizioIndex ? escapeHtml(String(currentEntry.reps ?? "")) : ""}" ${index !== allenamentoAttivo.esercizioIndex ? "disabled" : ""}>
             </div>
 
             <div class="field-group">
               <label for="weightInput-${index}">Peso usato (kg)</label>
-              <input id="weightInput-${index}" type="number" min="0" step="0.5" inputmode="decimal" placeholder="Es. 35" ${index !== allenamentoAttivo.esercizioIndex ? "disabled" : ""}>
+              <input id="weightInput-${index}" type="number" min="0" step="0.1" inputmode="decimal" placeholder="Es. 35" value="${index === allenamentoAttivo.esercizioIndex ? escapeHtml(String(currentEntry.peso ?? "")) : ""}" ${index !== allenamentoAttivo.esercizioIndex ? "disabled" : ""}>
             </div>
           </section>
         </article>
@@ -395,17 +633,14 @@ function renderWorkoutMode() {
 
   workoutContent.innerHTML = `
     <div class="workout-content">
-      <p class="workout-progress">
-        Super serie ${allenamentoAttivo.setIndex + 1} di ${allenamentoAttivo.superSerie.length}
-      </p>
       <div class="summary-grid">
+        <div class="summary-card">
+          <span>Set</span>
+          <strong>${allenamentoAttivo.setIndex + 1} di ${allenamentoAttivo.superSerie.length}</strong>
+        </div>
         <div class="summary-card">
           <span>Serie corrente</span>
           <strong>${allenamentoAttivo.serieCorrente} / ${currentSet.serieTotali}</strong>
-        </div>
-        <div class="summary-card">
-          <span>Blocco attivo</span>
-          <strong>${escapeHtml(currentSet.nome)}</strong>
         </div>
       </div>
       ${showDots ? `<div class="slider-dots">${dotsMarkup}</div>` : ""}
@@ -419,6 +654,7 @@ function renderWorkoutMode() {
 
   updateWorkoutActionButton();
   updateFloatingIsland();
+  attachWorkoutInputListeners();
 }
 
 function completeSet() {
@@ -426,20 +662,23 @@ function completeSet() {
     return;
   }
 
+  syncCurrentWorkoutInputs();
+
   const currentSet = allenamentoAttivo.superSerie[allenamentoAttivo.setIndex];
   const exercise = currentSet.esercizi[allenamentoAttivo.esercizioIndex];
   const repsInput = document.getElementById(`repsInput-${allenamentoAttivo.esercizioIndex}`);
   const weightInput = document.getElementById(`weightInput-${allenamentoAttivo.esercizioIndex}`);
 
   const repsValue = repsInput.value.trim();
-  const weightValue = weightInput.value.trim();
+  const weightValue = normalizeWeightValue(weightInput.value);
+  const currentSeriesIndex = allenamentoAttivo.serieCorrente - 1;
 
-  if (!repsValue || !weightValue) {
+  if (!repsValue || weightValue === "") {
     statusMessage.textContent = "Inserisci ripetizioni fatte e peso usato prima di completare il set.";
     return;
   }
 
-  const historyKey = createHistoryKey(allenamentoAttivo.nome, currentSet.nome, exercise.nome);
+  const historyKey = createHistoryKey(allenamentoAttivo.nome, currentSet.nome, exercise.nome, currentSeriesIndex);
   storicoEsercizi[historyKey] = {
     ripetizioni: repsValue,
     peso: weightValue
@@ -471,12 +710,14 @@ function completeSet() {
   }
 
   if (!isLastWorkoutSet) {
-    allenamentoAttivo.setIndex += 1;
-    allenamentoAttivo.serieCorrente = 1;
-    allenamentoAttivo.esercizioIndex = 0;
-    statusMessage.textContent = `Set completato. Passa a ${allenamentoAttivo.superSerie[allenamentoAttivo.setIndex].nome}.`;
-    renderWorkoutMode();
-    persistAppState();
+    animateSetTransition(() => {
+      allenamentoAttivo.setIndex += 1;
+      allenamentoAttivo.serieCorrente = 1;
+      allenamentoAttivo.esercizioIndex = 0;
+      statusMessage.textContent = `Set completato. Passa a ${allenamentoAttivo.superSerie[allenamentoAttivo.setIndex].nome}.`;
+      renderWorkoutMode();
+      persistAppState();
+    });
     return;
   }
 
@@ -530,6 +771,21 @@ function handleWorkoutAction() {
   completeSet();
 }
 
+function handleWorkoutBack() {
+  if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
+    return;
+  }
+
+  syncCurrentWorkoutInputs();
+
+  if (!goToPreviousWorkoutStep()) {
+    return;
+  }
+
+  renderWorkoutMode();
+  persistAppState();
+}
+
 function updateWorkoutActionButton() {
   if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
     workoutActions.classList.add("hidden");
@@ -537,6 +793,7 @@ function updateWorkoutActionButton() {
   }
 
   workoutActions.classList.remove("hidden");
+  workoutBackButton.disabled = isWorkoutAtStart();
   workoutActionButton.textContent = getWorkoutActionLabel();
 }
 
@@ -563,6 +820,7 @@ function getWorkoutActionLabel() {
 
 function updateFloatingIsland() {
   if (!(workoutActive === true && workoutMinimized === true) || !allenamentoAttivo) {
+    document.body.classList.remove("body--floating-active");
     floatingIsland.classList.add("hidden");
     return;
   }
@@ -572,6 +830,7 @@ function updateFloatingIsland() {
 
   floatingIslandExercise.textContent = exercise.nome;
   floatingIslandSeries.textContent = `${allenamentoAttivo.serieCorrente}/${currentSet.serieTotali}`;
+  document.body.classList.add("body--floating-active");
   floatingIsland.classList.remove("hidden");
 }
 
@@ -616,6 +875,32 @@ function animateWorkoutTransition(targetIndex, onComplete) {
   window.setTimeout(onComplete, 300);
 }
 
+function animateSetTransition(onComplete) {
+  const currentContent = workoutContent.querySelector(".workout-content");
+
+  if (!currentContent) {
+    onComplete();
+    return;
+  }
+
+  currentContent.classList.add("is-set-transition-out");
+
+  window.setTimeout(() => {
+    onComplete();
+
+    const nextContent = workoutContent.querySelector(".workout-content");
+
+    if (!nextContent) {
+      return;
+    }
+
+    nextContent.classList.add("is-set-transition-in");
+    window.requestAnimationFrame(() => {
+      nextContent.classList.remove("is-set-transition-in");
+    });
+  }, 220);
+}
+
 async function restoreAppState() {
   const savedState = await loadAppState();
 
@@ -625,13 +910,15 @@ async function restoreAppState() {
     return;
   }
 
-  schedaCorrente = savedState.scheda || null;
+  schedaCorrente = savedState.scheda ? normalizeProgramData(savedState.scheda) : null;
   storicoEsercizi = savedState.storico || {};
 
-  if (savedState.workoutState?.allenamentoAttivo && schedaCorrente) {
-    allenamentoAttivo = savedState.workoutState.allenamentoAttivo;
-    workoutActive = savedState.workoutState.workoutActive === true;
-    workoutMinimized = savedState.workoutState.workoutMinimized === true;
+  const normalizedWorkoutState = normalizePersistedWorkoutState(savedState.workoutState);
+
+  if (normalizedWorkoutState?.allenamentoAttivo && schedaCorrente) {
+    allenamentoAttivo = normalizedWorkoutState.allenamentoAttivo;
+    workoutActive = normalizedWorkoutState.workoutActive;
+    workoutMinimized = normalizedWorkoutState.workoutMinimized;
   } else {
     allenamentoAttivo = null;
     workoutActive = false;
@@ -653,8 +940,8 @@ async function restoreAppState() {
   }
 }
 
-function createHistoryKey(workoutName, setName, exerciseName) {
-  return `${workoutName}::${setName}::${exerciseName}`;
+function createHistoryKey(workoutName, setName, exerciseName, seriesIndex) {
+  return `${workoutName}::${setName}::${exerciseName}::${seriesIndex}`;
 }
 
 function formatValue(value) {
