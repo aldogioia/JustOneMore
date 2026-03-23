@@ -39,6 +39,10 @@ body {
   padding: 0;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 button,
 input {
   font: inherit;
@@ -424,6 +428,9 @@ body.has-sheet .import-panel {
 }
 
 .workout-modal {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
   position: fixed;
   inset: 0;
   z-index: 30;
@@ -442,17 +449,31 @@ body.has-sheet .import-panel {
   min-height: 100vh;
   padding: calc(20px + env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom));
   display: grid;
-  align-content: start;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 16px;
-  overflow-y: auto;
+  overflow: hidden;
   background:
     radial-gradient(circle at top, rgba(79, 195, 179, 0.12), transparent 22%),
     linear-gradient(180deg, rgba(7, 11, 17, 0.96), rgba(7, 11, 17, 1));
 }
 
+.workout-panel__header {
+  padding-top: 4px;
+}
+
 .modal-actions {
   display: flex;
   gap: 10px;
+}
+
+.workout-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 10px 0 calc(8px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(7, 11, 17, 0), rgba(7, 11, 17, 0.98) 24%);
+}
+
+.workout-button {
+  grid-column: 2;
 }
 
 .floating-island {

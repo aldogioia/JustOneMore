@@ -21,6 +21,7 @@ const workoutTitle = document.getElementById("workoutTitle");
 const workoutContent = document.getElementById("workoutContent");
 const workoutActions = document.getElementById("workoutActions");
 const workoutBackButton = document.getElementById("workoutBackButton");
+const workoutSkipSetButton = document.getElementById("workoutSkipSetButton");
 const workoutActionButton = document.getElementById("workoutActionButton");
 const exitWorkoutButton = document.getElementById("exitWorkoutButton");
 const minimizeWorkoutButton = document.getElementById("minimizeWorkoutButton");
@@ -34,6 +35,7 @@ removeSheetButton.addEventListener("click", removeCurrentSheet);
 minimizeWorkoutButton.addEventListener("click", minimizeWorkoutMode);
 floatingIsland.addEventListener("click", reopenWorkoutMode);
 workoutBackButton.addEventListener("click", handleWorkoutBack);
+workoutSkipSetButton.addEventListener("click", handleSkipSet);
 workoutActionButton.addEventListener("click", handleWorkoutAction);
 window.addEventListener("resize", syncAccordionHeights);
 
@@ -732,6 +734,7 @@ function closeWorkoutMode() {
   workoutActive = false;
   workoutMinimized = false;
   workoutModal.classList.add("hidden");
+  unlockBodyScroll();
   floatingIsland.classList.add("hidden");
   renderWorkoutMode();
   persistAppState();
@@ -744,6 +747,7 @@ function minimizeWorkoutMode() {
 
   workoutMinimized = true;
   workoutModal.classList.add("hidden");
+  unlockBodyScroll();
   updateFloatingIsland();
   persistAppState();
 }
@@ -760,6 +764,7 @@ function reopenWorkoutMode() {
 
 function openWorkoutMode() {
   workoutModal.classList.remove("hidden");
+  lockBodyScroll();
   updateFloatingIsland();
 }
 
@@ -786,6 +791,41 @@ function handleWorkoutBack() {
   persistAppState();
 }
 
+function handleSkipSet() {
+  if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
+    return;
+  }
+
+  const confirmed = window.confirm("Vuoi saltare tutto il set corrente?");
+
+  if (!confirmed) {
+    return;
+  }
+
+  syncCurrentWorkoutInputs();
+
+  const isLastWorkoutSet = allenamentoAttivo.setIndex >= allenamentoAttivo.superSerie.length - 1;
+
+  if (isLastWorkoutSet) {
+    animateSetTransition(() => {
+      allenamentoAttivo.completato = true;
+      statusMessage.textContent = `Allenamento ${allenamentoAttivo.nome} completato.`;
+      renderWorkoutMode();
+      persistAppState();
+    });
+    return;
+  }
+
+  animateSetTransition(() => {
+    allenamentoAttivo.setIndex += 1;
+    allenamentoAttivo.serieCorrente = 1;
+    allenamentoAttivo.esercizioIndex = 0;
+    statusMessage.textContent = `Set saltato. Passa a ${allenamentoAttivo.superSerie[allenamentoAttivo.setIndex].nome}.`;
+    renderWorkoutMode();
+    persistAppState();
+  });
+}
+
 function updateWorkoutActionButton() {
   if (!workoutActive || !allenamentoAttivo || allenamentoAttivo.completato) {
     workoutActions.classList.add("hidden");
@@ -794,6 +834,7 @@ function updateWorkoutActionButton() {
 
   workoutActions.classList.remove("hidden");
   workoutBackButton.disabled = isWorkoutAtStart();
+  workoutSkipSetButton.disabled = allenamentoAttivo.superSerie.length === 0;
   workoutActionButton.textContent = getWorkoutActionLabel();
 }
 
@@ -899,6 +940,18 @@ function animateSetTransition(onComplete) {
       nextContent.classList.remove("is-set-transition-in");
     });
   }, 220);
+}
+
+function lockBodyScroll() {
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
+  document.body.classList.add("modal-open");
+  document.body.style.paddingRight = scrollbarWidth > 0 ? `${scrollbarWidth}px` : "";
+}
+
+function unlockBodyScroll() {
+  document.body.classList.remove("modal-open");
+  document.body.style.paddingRight = "";
 }
 
 async function restoreAppState() {
