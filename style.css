@@ -473,7 +473,7 @@ body.has-sheet .import-panel {
 }
 
 .workout-button {
-  grid-column: 2;
+  grid-column: span 2;
 }
 
 .floating-island {
